@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import tensorflow as tf
-from text_rcnn import TextRCnn
+from text_rrcnn import TextRrcnn
 from config import config
 import time
 import os
@@ -41,12 +41,12 @@ def train(config):
             log_device_placement=config['log_device_placement']
         )
         with tf.Session(config=sess_config) as sess:
-            cnn = TextRCnn(config)
+            rcnn = TextRrcnn(config)
 
         # training procedure
         global_step = tf.Variable(0, name='global_step', trainable=False)
         optimizer = tf.train.AdamOptimizer(config['learning_rate'])
-        grads_and_vars = optimizer.compute_gradients(cnn.loss)
+        grads_and_vars = optimizer.compute_gradients(rcnn.loss)
         train_op = optimizer.apply_gradients(grads_and_vars, global_step=global_step)
 
         # keep track of gradient values and sparsity
@@ -65,8 +65,8 @@ def train(config):
         print('writing to {}'.format(outdir))
 
         # summary for loss and accuracy
-        loss_summary = tf.summary.scalar('loss', cnn.loss)
-        acc_summary = tf.summary.scalar('accuracy', cnn.accuracy)
+        loss_summary = tf.summary.scalar('loss', rcnn.loss)
+        acc_summary = tf.summary.scalar('accuracy', rcnn.accuracy)
 
         # train summary
         train_summary_op = tf.summary.merge([loss_summary, acc_summary, grad_summaries_merged])
@@ -91,13 +91,13 @@ def train(config):
 
         def train_step(x_batch, y_batch):
             feed_dict = {
-                cnn.input_x: x_batch,
-                cnn.input_y: y_batch,
-                cnn.dropout_keep_prob: config['dropout_keep_prob']
+                rcnn.input_x: x_batch,
+                rcnn.input_y: y_batch,
+                rcnn.dropout_keep_prob: config['dropout_keep_prob']
             }
 
             _, step, summaries, loss, accuracy = sess.run(
-                [train_op, global_step, train_summary_op, cnn.loss, cnn.accuracy],
+                [train_op, global_step, train_summary_op, rcnn.loss, rcnn.accuracy],
                 feed_dict=feed_dict
             )
 
@@ -107,13 +107,13 @@ def train(config):
 
         def dev_step(x_batch, y_batch, writer=None):
             feed_dic = {
-                cnn.input_x: x_batch,
-                cnn.input_y: y_batch,
-                cnn.dropout_keep_prob: 1.0
+                rcnn.input_x: x_batch,
+                rcnn.input_y: y_batch,
+                rcnn.dropout_keep_prob: 1.0
             }
 
             step, summaries, loss, accuracy = sess.run(
-                [global_step, dev_summary_op, cnn.loss, cnn.accuracy],
+                [global_step, dev_summary_op, rcnn.loss, rcnn.accuracy],
                 feed_dict=feed_dic
             )
 
@@ -137,8 +137,8 @@ def train(config):
                 print('save model checkpoint to {}'.format(path))
 
         # test accuracy
-        test_accuracy = sess.run([cnn.accuracy], feed_dict={
-            cnn.input_x: x_test, cnn.input_y: y_test, cnn.dropout_keep_prob: 1.0})
+        test_accuracy = sess.run([rcnn.accuracy], feed_dict={
+            rcnn.input_x: x_test, rcnn.input_y: y_test, rcnn.dropout_keep_prob: 1.0})
         print('Test dataset accuracy: {}'.format(test_accuracy))
 
 
