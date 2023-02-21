@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import tensorflow as tf
-from text_rcnn import TextRcnn
+from text_rcnn import TextRCnn
 from config import config
 import time
 import os
